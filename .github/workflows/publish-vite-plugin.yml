@@ -9,7 +9,8 @@ jobs:
     name: Publish to npm
     if: startsWith(github.event.release.tag_name, 'vite-plugin-v')
     runs-on: ubuntu-latest
-    permissions:
+    environment: release
+    permissions: npm-vite-plugin-cloudflare-workers-rs
       contents: read
       id-token: write
     defaults:
