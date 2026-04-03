@@ -11,7 +11,9 @@
   },
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "keywords": [
     "vite",
     "vite-plugin",
@@ -26,7 +28,7 @@
   "author": "Áquila Freitas <hi@aquilafreitas.com>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/aquilacf/workers-rs.git",
+    "url": "git+https://github.com/aquilacf/workers-rs.git",
     "directory": "vite-plugin-workers-rs"
   },
   "homepage": "https://github.com/aquilacf/workers-rs/tree/main/vite-plugin-workers-rs",
