@@ -1,0 +1,48 @@
+{
+  "name": "vite-plugin-workers-rs-unofficial",
+  "version": "0.1.0",
+  "description": "Vite plugin that integrates Rust worker-build with @cloudflare/vite-plugin",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "files": ["dist"],
+  "keywords": [
+    "vite",
+    "vite-plugin",
+    "cloudflare",
+    "cloudflare-workers",
+    "rust",
+    "wasm",
+    "worker-build",
+    "workers-rs"
+  ],
+  "license": "MIT OR Apache-2.0",
+  "author": "Áquila Freitas <hi@aquilafreitas.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aquilacf/workers-rs.git",
+    "directory": "vite-plugin-workers-rs"
+  },
+  "homepage": "https://github.com/aquilacf/workers-rs/tree/main/vite-plugin-workers-rs",
+  "bugs": "https://github.com/aquilacf/workers-rs/issues",
+  "scripts": {
+    "build": "tsdown",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "@cloudflare/vite-plugin": "^1.25.0",
+    "vite": "^6.1.0 || ^7.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.25.2",
+    "tsdown": "^0.16.0",
+    "typescript": "~5.8.0",
+    "vite": "^7.3.1"
+  }
+}

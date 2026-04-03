@@ -1,0 +1,13 @@
+[package]
+name = "vite-tailwind-example"
+version = "0.1.0"
+edition = "2024"
+
+[package.metadata.release]
+release = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+worker = { path = "../../worker" }

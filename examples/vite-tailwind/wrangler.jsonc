@@ -1,0 +1,9 @@
+{
+  "name": "vite-tailwind-example",
+  "main": "dist/worker/index.js",
+  "compatibility_date": "2026-01-17",
+  "assets": {
+    "directory": "./dist/client",
+    "binding": "ASSETS"
+  }
+}
