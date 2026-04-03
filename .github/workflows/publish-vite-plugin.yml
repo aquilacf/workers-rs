@@ -9,6 +9,9 @@ jobs:
     name: Publish to npm
     if: startsWith(github.event.release.tag_name, 'vite-plugin-v')
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     defaults:
       run:
         working-directory: vite-plugin-workers-rs
