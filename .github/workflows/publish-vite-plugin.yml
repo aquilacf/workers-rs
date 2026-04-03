@@ -1,0 +1,38 @@
+name: Publish vite-plugin-workers-rs
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    name: Publish to npm
+    if: startsWith(github.event.release.tag_name, 'vite-plugin-v')
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: vite-plugin-workers-rs
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "25"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Set package version from release tag
+        run: |
+          tag="${{ github.event.release.tag_name }}"
+          version="${tag#vite-plugin-v}"
+          npm version "$version" --no-git-tag-version
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Publish
+        run: npm publish --provenance
