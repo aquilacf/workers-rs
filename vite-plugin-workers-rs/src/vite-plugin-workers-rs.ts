@@ -2,8 +2,13 @@ import { execSync, type ExecSyncOptions } from "child_process";
 import { resolve } from "path";
 import type { Plugin, ViteDevServer } from "vite";
 
-const DEBOUNCE_MS = 3000;
+export const DEFAULT_ENVIRONMENT_NAME = "worker";
+export const DEFAULT_OUT_DIR = "build";
+export const DEFAULT_RELEASE = true;
+export const DEFAULT_MAX_RETRIES = 2;
+export const DEFAULT_DEBOUNCE_MS = 3000;
 const WORKER_BUILD_REPO = "https://github.com/cloudflare/workers-rs";
+const IGNORED_DIRS = ["target", ".wrangler"];
 
 let workerBuilt = false;
 
@@ -12,6 +17,7 @@ export interface ResolvedRustBuildOptions {
   outDir: string;
   release: boolean;
   maxRetries: number;
+  debounceMs: number;
   extraArgs: string[];
 }
 
@@ -56,24 +62,27 @@ export function createRustBuildPlugin(opts: ResolvedRustBuildOptions): Plugin {
     applyToEnvironment: (env) => env.name === opts.environmentName,
 
     config(userConfig) {
-      if (workerBuilt) return;
-      const root = userConfig.root ? resolve(userConfig.root) : process.cwd();
-      console.log("[workers-rs] Building worker...");
-      execSync(INSTALL_AND_BUILD, getExecOpts(root));
-      workerBuilt = true;
+      if (!workerBuilt) {
+        const root = userConfig.root ? resolve(userConfig.root) : process.cwd();
+        console.log("[workers-rs] Building worker...");
+        execSync(INSTALL_AND_BUILD, getExecOpts(root));
+        workerBuilt = true;
+      }
+
+      return {
+        server: {
+          watch: {
+            ignored: [
+              `**/${opts.outDir}/**`,
+              ...IGNORED_DIRS.map((dir) => `**/${dir}/**`),
+            ],
+          },
+        },
+      };
     },
 
     configureServer(server: ViteDevServer) {
-      const root = server.config.root;
-      const ignoreDirs = [
-        resolve(root, opts.outDir),
-        resolve(root, "target"),
-        resolve(root, ".wrangler"),
-        resolve(root, "node_modules"),
-      ];
-
-      server.watcher.on("change", (file) => {
-        if (ignoreDirs.some((dir) => file.startsWith(dir))) return;
+      const scheduleRebuild = () => {
         clearTimeout(debounce);
         debounce = setTimeout(() => {
           const root = server.config.root;
@@ -86,8 +95,12 @@ export function createRustBuildPlugin(opts: ResolvedRustBuildOptions): Plugin {
               "[workers-rs] Worker rebuild failed after all retries."
             );
           }
-        }, DEBOUNCE_MS);
-      });
+        }, opts.debounceMs);
+      };
+
+      server.watcher.on("change", scheduleRebuild);
+      server.watcher.on("add", scheduleRebuild);
+      server.watcher.on("unlink", scheduleRebuild);
     },
   };
 }

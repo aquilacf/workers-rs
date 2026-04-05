@@ -45,9 +45,10 @@ The plugin handles two things:
 cloudflareRustWorker({
   rustBuild: {
     environmentName: "worker", // Vite environment name (default: "worker")
-    outDir: "dist/worker",     // Must match wrangler.jsonc `main` directory (default: "dist/worker")
+    outDir: "build",           // Must match wrangler.jsonc `main` directory (default: "build")
     release: true,             // Pass --release to worker-build (default: true)
     maxRetries: 2,             // Rebuild retry attempts during dev (default: 2)
+    debounceMs: 3000,          // Delay before triggering rebuild on file change (default: 3000)
     extraArgs: [],             // Additional worker-build CLI args (default: [])
   },
   cloudflare: {
@@ -63,8 +64,9 @@ During `vite dev`, the plugin:
 
 1. Runs `cargo install --git https://github.com/cloudflare/workers-rs worker-build` to ensure the build tool is available.
 2. Compiles the worker with `worker-build` into the configured `outDir`.
-3. Watches for file changes (excluding `target/`, `dist/`, `.wrangler/`, `node_modules/`) and rebuilds the worker with debouncing.
-4. Restarts the Vite dev server after a successful rebuild.
+3. Configures Vite's file watcher to ignore `target/`, `outDir/` and `.wrangler/`.
+4. Watches for file changes, additions, and deletions, then rebuilds the worker with debouncing.
+5. Restarts the Vite dev server after a successful rebuild.
 
 During `vite build`, step 1-2 run once, then `@cloudflare/vite-plugin` takes over to bundle the worker for deployment.
 

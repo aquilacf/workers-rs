@@ -2,6 +2,11 @@ import { cloudflare, type PluginConfig } from "@cloudflare/vite-plugin";
 import type { Plugin } from "vite";
 import {
   createRustBuildPlugin,
+  DEFAULT_DEBOUNCE_MS,
+  DEFAULT_ENVIRONMENT_NAME,
+  DEFAULT_MAX_RETRIES,
+  DEFAULT_OUT_DIR,
+  DEFAULT_RELEASE,
   type ResolvedRustBuildOptions,
 } from "./vite-plugin-workers-rs.js";
 
@@ -13,9 +18,9 @@ export interface RustBuildOptions {
   environmentName?: string;
 
   /**
-   * Output directory for the compiled worker.
-   * Must match the directory containing `main` in wrangler.jsonc.
-   * @default "dist/worker"
+   * Intermediate output directory for worker-build (Rust compilation).
+   * Must match the `main` path in wrangler.jsonc.
+   * @default "build"
    */
   outDir?: string;
 
@@ -36,6 +41,12 @@ export interface RustBuildOptions {
    * @default []
    */
   extraArgs?: string[];
+
+  /**
+   * Debounce delay in milliseconds before triggering a rebuild on file change.
+   * @default 3000
+   */
+  debounceMs?: number;
 }
 
 export interface CloudflareRustWorkerOptions {
@@ -56,11 +67,12 @@ function resolveRustBuildOptions(
   opts?: RustBuildOptions
 ): ResolvedRustBuildOptions {
   return {
-    environmentName: opts?.environmentName ?? "worker",
-    outDir: opts?.outDir ?? "dist/worker",
-    release: opts?.release ?? true,
-    maxRetries: opts?.maxRetries ?? 2,
+    environmentName: opts?.environmentName ?? DEFAULT_ENVIRONMENT_NAME,
+    outDir: opts?.outDir ?? DEFAULT_OUT_DIR,
+    release: opts?.release ?? DEFAULT_RELEASE,
+    maxRetries: opts?.maxRetries ?? DEFAULT_MAX_RETRIES,
     extraArgs: opts?.extraArgs ?? [],
+    debounceMs: opts?.debounceMs ?? DEFAULT_DEBOUNCE_MS,
   };
 }
 
@@ -77,7 +89,7 @@ function resolveRustBuildOptions(
  *   environments: {
  *     worker: {
  *       consumer: "server",
- *       build: { outDir: "dist/worker", emptyOutDir: false },
+ *       build: { outDir: "dist/worker", emptyOutDir: true },
  *     },
  *   },
  * });
