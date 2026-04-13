@@ -5,14 +5,15 @@ import type { Plugin, ViteDevServer } from "vite";
 export const DEFAULT_ENVIRONMENT_NAME = "worker";
 export const DEFAULT_OUT_DIR = "build";
 export const DEFAULT_RELEASE = true;
+export const DEFAULT_WORKER_BUILD_PATH = "worker-build";
 export const DEFAULT_MAX_RETRIES = 2;
 export const DEFAULT_DEBOUNCE_MS = 3000;
-const WORKER_BUILD_REPO = "https://github.com/cloudflare/workers-rs";
 const IGNORED_DIRS = ["target", ".wrangler"];
 
 let workerBuilt = false;
 
 export interface ResolvedRustBuildOptions {
+  workerBuildPath: string;
   environmentName: string;
   outDir: string;
   release: boolean;
@@ -29,8 +30,7 @@ export function createRustBuildPlugin(opts: ResolvedRustBuildOptions): Plugin {
     .filter(Boolean)
     .join(" ");
 
-  const INSTALL_AND_BUILD = `cargo install --git ${WORKER_BUILD_REPO} worker-build && worker-build ${buildFlags}`;
-  const REBUILD = `worker-build ${buildFlags}`;
+  const BUILD_CMD = `${opts.workerBuildPath} ${buildFlags}`;
 
   let debounce: ReturnType<typeof setTimeout> | undefined;
 
@@ -65,7 +65,7 @@ export function createRustBuildPlugin(opts: ResolvedRustBuildOptions): Plugin {
       if (!workerBuilt) {
         const root = userConfig.root ? resolve(userConfig.root) : process.cwd();
         console.log("[workers-rs] Building worker...");
-        execSync(INSTALL_AND_BUILD, getExecOpts(root));
+        execSync(BUILD_CMD, getExecOpts(root));
         workerBuilt = true;
       }
 
@@ -87,7 +87,7 @@ export function createRustBuildPlugin(opts: ResolvedRustBuildOptions): Plugin {
         debounce = setTimeout(() => {
           const root = server.config.root;
           console.log("[workers-rs] Rebuilding worker...");
-          if (runBuild(REBUILD, root)) {
+          if (runBuild(BUILD_CMD, root)) {
             console.log("[workers-rs] Worker rebuilt. Restarting dev server...");
             server.restart();
           } else {

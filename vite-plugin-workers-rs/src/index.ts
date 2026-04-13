@@ -7,10 +7,17 @@ import {
   DEFAULT_MAX_RETRIES,
   DEFAULT_OUT_DIR,
   DEFAULT_RELEASE,
+  DEFAULT_WORKER_BUILD_PATH,
   type ResolvedRustBuildOptions,
 } from "./vite-plugin-workers-rs.js";
 
 export interface RustBuildOptions {
+  /**
+   * Path to the worker-build binary.
+   * @default "worker-build"
+   */
+  workerBuildPath?: string;
+
   /**
    * The Vite environment name for the worker.
    * @default "worker"
@@ -67,6 +74,7 @@ function resolveRustBuildOptions(
   opts?: RustBuildOptions
 ): ResolvedRustBuildOptions {
   return {
+    workerBuildPath: opts?.workerBuildPath ?? DEFAULT_WORKER_BUILD_PATH,
     environmentName: opts?.environmentName ?? DEFAULT_ENVIRONMENT_NAME,
     outDir: opts?.outDir ?? DEFAULT_OUT_DIR,
     release: opts?.release ?? DEFAULT_RELEASE,
